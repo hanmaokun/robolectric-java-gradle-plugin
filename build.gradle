@@ -1,0 +1,28 @@
+buildscript { repositories { mavenCentral() } }
+
+apply plugin: 'groovy'
+apply plugin: 'maven'
+
+group = group_prop
+version = version_prop
+
+sourceCompatibility = javaLang_prop
+targetCompatibility = javaLang_prop
+
+dependencies {
+    repositories {
+        mavenCentral()
+    }
+
+    compile gradleApi()
+    compile localGroovy()
+    compile "com.android.tools.build:gradle:$android_build_tools_version"
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: uri('../repo'))
+        }
+    }
+}
