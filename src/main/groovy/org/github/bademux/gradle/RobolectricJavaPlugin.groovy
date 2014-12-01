@@ -1,11 +1,10 @@
 package org.github.bademux.gradle
-
 import com.android.builder.core.DefaultManifestParser
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.logging.Logger
 import org.gradle.api.plugins.JavaPlugin
-import org.gradle.api.tasks.testing.Test
 
 class RobolectricJavaPlugin implements Plugin<Project> {
 
@@ -46,21 +45,34 @@ class RobolectricJavaPlugin implements Plugin<Project> {
 
     private static void configureProject(final Project project, variant, String packageName) {
         Task processResourcesTask = variant.outputs.get(0).processResources
+
         //add dependency
-        project.tasks.processTestResources.dependsOn processResourcesTask
-        project.tasks.compileTestJava.dependsOn variant.javaCompile
-
-        final Test testTask = project.tasks.getByName('test')
-        testTask.description = 'Runs all Robolectric tests'
-        testTask.systemProperties += ['android.package'  : packageName,
-                                      'android.manifest' : processResourcesTask.manifestFile,
-                                      'android.resources': processResourcesTask.resDir,
-                                      'android.assets'   : processResourcesTask.assetsDir]
-
-        project.logger.debug(testTask.systemProperties.toMapString())
-
+        project.tasks.testClasses.dependsOn(processResourcesTask, variant.javaCompile)
         project.dependencies.add('testCompile', project.files(variant.javaCompile.destinationDir))
 
+        Map robolectricProps = ['android.package'  : packageName,
+                                'android.manifest' : processResourcesTask.manifestFile.absolutePath,
+                                'android.resources': processResourcesTask.resDir.absolutePath,
+                                'android.assets'   : processResourcesTask.assetsDir.absolutePath]
+        project.logger.debug('Robolectric conf: %s', robolectricProps)
+
+        //add robolectric properties for test tasks
+       // project.tasks.withType(Test) { systemProperties += robolectricProps }
+        File configFile = new File(project.sourceSets.test.output.classesDir,
+                             'generated_org.robolectric.Config.properties')
+        writeConfigForIde(configFile, robolectricProps, variant.name, project.logger)
+    }
+
+    /** fix tests run for IDE. Should be used with org.github.bademux.gradle.IdeAwareRobolectricTestRunner */
+    private static void writeConfigForIde(File propFile, Map prop, String comment, Logger log) {
+        try {
+            Properties properties = new Properties();
+            properties.putAll(prop)
+            properties.store(propFile.newWriter(), comment)
+            log.debug('Write robolectric conf for IDE: %s', propFile.absolutePath)
+        } catch (IOException e) {
+            log.debug('exception occured while saving properties file', e)
+        }
     }
 
     private static String getPackageName(android) {
