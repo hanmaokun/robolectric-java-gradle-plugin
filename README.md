@@ -3,7 +3,28 @@ robolectric-java-gradle-plugin
 
 Test Project: https://github.com/bademux/deckard-gradle (you should run gradle uploadArchive on robolectric-java-gradle-plugin project first)
 
-For IntelliJ Idea compatibility IdeAwareRobolectricTestRunner should be used
+
+#HowTo:
+1. Add new module to you project
+2.1 Add to _build.gradle_
+
+```groovy
+apply plugin: 'robolectric'
+
+robolectric{
+    useWith(':app', 'Flavor2', 'Debug') // use with :app project (android) for flavours Flavor2 and buildType Debug
+    addSdkMavenRepo = true //adds google and android sdc maven repos, true by default
+}
+```
+2.2 Add to _build.gradle_ dependencies, ex:
+```groovy
+
+dependencies {
+    testCompile 'org.robolectric:robolectric:2.4'
+    testCompile 'junit:junit:4.11'
+ 	...
+}
+3. For IntelliJ Idea compatibility IdeAwareRobolectricTestRunner should be used
 
 ```java
 package org.github.bademux.gradle;

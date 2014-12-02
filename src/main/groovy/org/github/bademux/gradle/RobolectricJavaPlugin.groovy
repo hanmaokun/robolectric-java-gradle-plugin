@@ -1,4 +1,5 @@
 package org.github.bademux.gradle
+
 import com.android.builder.core.DefaultManifestParser
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -13,7 +14,6 @@ class RobolectricJavaPlugin implements Plugin<Project> {
         project.extensions.create('robolectric', RobolectricJavaPluginExtension)
 
         project.afterEvaluate { p -> process(p) }
-
     }
 
     private static void process(final Project project) {
@@ -24,12 +24,16 @@ class RobolectricJavaPlugin implements Plugin<Project> {
             configureProject(project,
                              check(aproject, ext.flavorName, ext.buildType),
                              getPackageName(aproject.android))
+
+            if (ext.addSdkMavenRepo) {
+                addAndroidSdkRepos(project, aproject)
+            }
         }
     }
 
     private static def check(final Project aproject,
                              final String flavorName, final String buildType) {
-        if (!aproject.hasProperty('android')) {
+        if (!aproject.plugins.hasPlugin('android')) {
             throw new IllegalArgumentException("'${aproject.name}' is invalid android project")
         }
         def variant = aproject.android.applicationVariants.find {
@@ -57,9 +61,9 @@ class RobolectricJavaPlugin implements Plugin<Project> {
         project.logger.debug('Robolectric conf: %s', robolectricProps)
 
         //add robolectric properties for test tasks
-       // project.tasks.withType(Test) { systemProperties += robolectricProps }
+        // project.tasks.withType(Test) { systemProperties += robolectricProps }
         File configFile = new File(project.sourceSets.test.output.classesDir,
-                             'generated_org.robolectric.Config.properties')
+                                   'generated_org.robolectric.Config.properties')
         writeConfigForIde(configFile, robolectricProps, variant.name, project.logger)
     }
 
@@ -82,6 +86,24 @@ class RobolectricJavaPlugin implements Plugin<Project> {
         }
         return new DefaultManifestParser().getPackage(android.sourceSets.main.manifest.srcFile)
     }
+
+    private static void addAndroidSdkRepos(Project project, Project aproject) {
+        String sdkFolder = aproject.plugins.findPlugin("android").sdkFolder
+        project.logger.debug('Android SDK folder: %s', sdkFolder)
+
+        File androidRepo = new File("$sdkFolder/extras/android/m2repository")
+        File googleRepo = new File("$sdkFolder/extras/android/m2repository")
+
+        project.buildscript.repositories {
+            if (androidRepo.exists()) {
+                maven { url androidRepo.toURI() }
+            }
+            if (androidRepo.exists()) {
+                maven { url googleRepo.toURI() }
+            }
+
+        }
+    }
 }
 
 class RobolectricJavaPluginExtension {
@@ -99,4 +121,6 @@ class RobolectricJavaPluginExtension {
     String flavorName
 
     String buildType
+
+    boolean addSdkMavenRepo = true;
 }
