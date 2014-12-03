@@ -1,14 +1,14 @@
 robolectric-java-gradle-plugin
 ==============================
 
-#Test Project: 
+#Sample Application: 
 [https://github.com/bademux/deckard-gradle] (you should run gradle uploadArchive on robolectric-java-gradle-plugin project first)
 
 #Reqs:
 Tested with AndroidStudio 0.8.14, gradle 2.1, android-gradle-pugin 0.13.3
 
 #HowTo:
-1. Add new module to you project
+- Add new module to you project
  Add to _build.gradle_
 ```groovy
 apply plugin: 'robolectric'
@@ -18,7 +18,7 @@ robolectric{
     //settings('robolectric.offline': true) //optional
 }
 ```
-2. Add needed dependencies to _build.gradle_, ex:
+- Add needed dependencies to _build.gradle_, ex:
 ```groovy
 dependencies {
     testCompile 'org.robolectric:robolectric:2.4'
@@ -31,4 +31,4 @@ dependencies {
     robolectric 'org.ccil.cowan.tagsoup:tagsoup:1.2'
 }
 ```
-3. For IntelliJ Idea compatibility [IdeAwareRobolectricTestRunner](https://github.com/bademux/deckard-gradle/blob/master/test-jvm/src/test/java/org/github/bademux/gradle/IdeAwareRobolectricTestRunner.java) should be used
+- For IntelliJ Idea compatibility [IdeAwareRobolectricTestRunner](https://github.com/bademux/deckard-gradle/blob/master/test-jvm/src/test/java/org/github/bademux/gradle/IdeAwareRobolectricTestRunner.java) should be used
